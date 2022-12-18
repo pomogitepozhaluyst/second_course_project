@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/training_class.dart';
-import 'package:second_course_project/training_screen.dart';
-import 'package:second_course_project/user.dart';
+import 'package:second_course_project/web/training_screen_web.dart';
+import 'package:second_course_project/web/user_web.dart';
 
-class ChoseTrainingScreen extends StatefulWidget {
+class ChoseTrainingScreenWeb extends StatefulWidget {
   final List<Training> allTraining;
-  final Function(User) tmp;
-  final User currentUser;
-  const ChoseTrainingScreen({super.key, required this.currentUser, required this.allTraining, required this.tmp});
+  final Function(UserWeb) tmp;
+  final UserWeb currentUser;
+  const ChoseTrainingScreenWeb({super.key, required this.currentUser, required this.allTraining, required this.tmp});
   @override
-  State<ChoseTrainingScreen> createState() => ChoseTrainingScreenState();
+  State<ChoseTrainingScreenWeb> createState() => ChoseTrainingScreenWebState();
 }
 
-class ChoseTrainingScreenState extends State<ChoseTrainingScreen> {
+class ChoseTrainingScreenWebState extends State<ChoseTrainingScreenWeb> {
   @override
   void initState() {
     super.initState();
@@ -105,7 +105,7 @@ class ChoseTrainingScreenState extends State<ChoseTrainingScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TrainingScreen(
+          builder: (context) => TrainingScreenWeb(
               currentUser: widget.currentUser, currentTraining: widget.allTraining[index], tmp: widget.tmp),
         ),
       );

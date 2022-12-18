@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:second_course_project/User.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/input_window.dart';
+import 'package:second_course_project/user.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -24,7 +24,7 @@ class StateSettingScreen extends State<SettingScreen> {
       backgroundColor: UserDecoration.mainColor,
       appBar: AppBar(
         title: Text(
-          "Найстройка",
+          "Настройка",
           style: TextStyle(
             fontFamily: UserDecoration.textStyle,
             color: UserDecoration.textTitleColor,
@@ -334,9 +334,6 @@ class StateSettingScreen extends State<SettingScreen> {
                         width: 50.0,
                         height: 50.0,
                         child: Container(
-                          child: Center(
-                            child: Text("HEX"),
-                          ),
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
                             border: Border.all(
@@ -346,6 +343,9 @@ class StateSettingScreen extends State<SettingScreen> {
                             borderRadius: const BorderRadius.all(
                               Radius.circular(8.0),
                             ),
+                          ),
+                          child: const Center(
+                            child: Text("HEX"),
                           ),
                         ),
                       ),

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
-import 'package:second_course_project/home_screen.dart';
-import 'package:second_course_project/user.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:second_course_project/network/api_client.dart';
+import 'package:second_course_project/web/user_web.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  final void Function() getNormalColor;
-
-  const RegistrationScreen({
+class UpdateUserScreen extends StatefulWidget {
+  final UserWeb currentUser;
+  final void Function(UserWeb) updateUser;
+  const UpdateUserScreen({
     super.key,
-    required this.getNormalColor,
+    required this.currentUser,
+    required this.updateUser,
   });
   @override
-  StateRegistrationScreen createState() => StateRegistrationScreen();
+  StateUpdateUserScreen createState() => StateUpdateUserScreen();
 }
 
-class StateRegistrationScreen extends State<RegistrationScreen> {
+class StateUpdateUserScreen extends State<UpdateUserScreen> {
   String? errorMessageOnEmptyPasswordInputField;
   String? errorMessageOnEmptyEmailInputField;
   String nameFromInputField = '';
@@ -33,7 +33,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
       backgroundColor: UserDecoration.mainColor,
       appBar: AppBar(
         title: Text(
-          "Регистрация",
+          "Обновление пользователя",
           style: TextStyle(
             fontFamily: UserDecoration.textStyle,
             color: UserDecoration.textTitleColor,
@@ -154,7 +154,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
                         width: 300.0,
                         child: Center(
                           child: Text(
-                            'зарегистрироваться',
+                            'Обновить',
                             style: TextStyle(
                               fontFamily: 'montserrat',
                               color: UserDecoration.textSubStrColor,
@@ -190,63 +190,29 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
     if (errorsFromInitField) {
       return;
     }
-    Database db = await openDatabase(
-      'resoursec/data_base.db',
+    var apiClient = ApiClient();
+    final user = await apiClient.updateUser2(
+      widget.currentUser.token,
+      nameFromInputField,
+      emailFromInputField,
+      passwordFromInputField,
     );
-    List<Map> tmp = await db.query('users', where: 'email = "$emailFromInputField"');
-    if (tmp.isNotEmpty) {
-      db.close();
-      errorMessageOnEmptyEmailInputField = 'Такая почта уже используется';
+    if (user is String) {
+      setState(() {
+        errorMessageOnEmptyEmailInputField = user;
+        errorsFromInitField = true;
+      });
       return;
     }
-    await db.insert(r'users ', {
-      'name': nameFromInputField,
-      'email': emailFromInputField,
-      'password': passwordFromInputField,
-      'level': 0,
-      'exp': 0,
-      'needExpToNextLevel': 100,
-    });
-    List<Map> tmp2 = await db.query('users', where: 'email = "$emailFromInputField"');
-    await db.insert('userColor', {
-      'id': tmp2[0]['id'],
-      'mainColor': 0xFF090100,
-      'secondColor': 0xFF28262c,
-      'textTitleColor': 0xFFffffff,
-      'textSubStrColor': 0xFF76758a,
-      'iconColor': 0xFF777086,
-      'textStyle': 'montserrat',
-    });
-    List<Map> user =
-        await db.query(r'users ', where: 'email = "$emailFromInputField" AND password = "$passwordFromInputField"');
-    await db.close();
-    goHomePage(user[0]);
+    widget.updateUser(user);
+    goHomePage();
   }
 
   void returnBackScreen() {
     Navigator.of(context).pop();
   }
 
-  void goHomePage(Map user) {
-    //Navigator.of(context).pop();
-    setState(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MyHomePage(
-            getNormalColor: widget.getNormalColor,
-            isUsedOriginalColor: false,
-            currentUser: User(
-              id: user['id'],
-              name: user['name'],
-              exp: user['exp'],
-              level: user['level'],
-              needExpToNextLevel: user['needExpToNextLevel'],
-              password: user['password'],
-            ),
-          ),
-        ),
-      );
-    });
+  void goHomePage() {
+    Navigator.of(context).pop();
   }
 }

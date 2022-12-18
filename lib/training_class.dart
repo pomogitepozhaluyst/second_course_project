@@ -1,14 +1,11 @@
-import 'package:flutter/material.dart';
-
 class Training {
   final String name;
-  final List<String> complexTraining;
-  final Image imageTraining;
-  final int giveExp;
+  final List<Map> complexTraining;
+  final int difficulty;
+
   const Training({
     required this.name,
     required this.complexTraining,
-    required this.imageTraining,
-    required this.giveExp,
+    required this.difficulty,
   });
 }

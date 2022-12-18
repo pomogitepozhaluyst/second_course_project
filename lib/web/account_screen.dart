@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
-import 'package:second_course_project/setting_screen.dart';
-import 'package:second_course_project/update_user_screen.dart';
-import 'package:second_course_project/user.dart';
+import 'package:second_course_project/web/update_user_screen.dart';
+import 'package:second_course_project/web/user_web.dart';
 
-class AccountScreen extends StatefulWidget {
-  final Function(User) updateMainScreen;
-  final User currentUser;
-  const AccountScreen({
+class AccountScreenWeb extends StatefulWidget {
+  final Function(UserWeb) updateMainScreen;
+  final UserWeb currentUser;
+  const AccountScreenWeb({
     super.key,
     required this.currentUser,
     required this.updateMainScreen,
   });
 
   @override
-  StateAccountScreen createState() => StateAccountScreen();
+  State<AccountScreenWeb> createState() => AccountScreenWebState();
 }
 
-class StateAccountScreen extends State<AccountScreen> with TickerProviderStateMixin {
+class AccountScreenWebState extends State<AccountScreenWeb> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
@@ -80,45 +79,45 @@ class StateAccountScreen extends State<AccountScreen> with TickerProviderStateMi
                   ),
                   LinearProgressIndicator(
                     value: widget.currentUser.exp / widget.currentUser.needExpToNextLevel,
-                    backgroundColor: UserDecoration.secondColor.withOpacity(0.7),
+                    backgroundColor: UserDecoration.secondColor.withOpacity(0.2),
                     color: UserDecoration.secondColor,
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(40.0),
-              child: Material(
-                color: UserDecoration.secondColor,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(8.0),
-                ),
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(8.0),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      goUpdateAccount();
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: SizedBox(
-                      width: 300.0,
-                      child: Center(
-                        child: Text(
-                          'Изменить данные',
-                          style: TextStyle(
-                            fontFamily: 'montserrat',
-                            color: UserDecoration.textSubStrColor,
-                            fontSize: UserDecoration.textSize,
+                  Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Material(
+                      color: UserDecoration.secondColor,
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(8.0),
+                      ),
+                      child: InkWell(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(8.0),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            goUpdateAccount();
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: SizedBox(
+                            width: 300.0,
+                            child: Center(
+                              child: Text(
+                                'Изменить данные',
+                                style: TextStyle(
+                                  fontFamily: 'montserrat',
+                                  color: UserDecoration.textSubStrColor,
+                                  fontSize: UserDecoration.textSize,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
@@ -150,14 +149,14 @@ class StateAccountScreen extends State<AccountScreen> with TickerProviderStateMi
   }
 
   void goSettingScreen() {
-    setState(() {
+    /* setState(() {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => SettingScreen(currentUser: widget.currentUser, updateMainScreen: updateAccountScreen),
         ),
       );
-    });
+    });*/
   }
 
   void updateAccountScreen() {

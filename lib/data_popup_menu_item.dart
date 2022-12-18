@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/pop_up_item_data.dart';
 
 class DataPopupMenuItem extends PopupMenuItem<PopupMenuItemData> {
@@ -13,7 +14,7 @@ class DataPopupMenuItem extends PopupMenuItem<PopupMenuItemData> {
                 flex: 1,
                 child: Icon(
                   data.icon,
-                  color: Colors.grey,
+                  color: UserDecoration.iconColor,
                 ),
               ),
               Expanded(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class InputWindow extends StatefulWidget {
   final String hintText;
@@ -47,8 +46,7 @@ class InputWindowState extends State<InputWindow> {
           stringFromInputField = value;
         },
         controller: controller,
-        maxLength: 40,
-        maxLengthEnforcement: MaxLengthEnforcement.none,
+        maxLength: 6,
         decoration: InputDecoration(
           errorText: errorMessage,
           hintText: widget.hintText,
@@ -65,19 +63,13 @@ class InputWindowState extends State<InputWindow> {
         ),
         TextButton(
           onPressed: () {
-            if (stringFromInputField.isEmpty) {
+            if (stringFromInputField.length < 6) {
               setState(() {
-                errorMessage = 'Название не может быть пустым';
+                errorMessage = 'Поле не может быть пустым';
               });
-            } else if (stringFromInputField.length <= 40) {
+            } else if (stringFromInputField.length == 6) {
               Navigator.of(context).pop();
-              errorMessage = null;
               widget.submit(int.parse('0xFF$stringFromInputField'));
-              stringFromInputField = '';
-            } else {
-              setState(() {
-                errorMessage = 'Слишком длинное название';
-              });
             }
           },
           child: const Text('Ок'),

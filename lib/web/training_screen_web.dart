@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:quiver/async.dart';
 import 'package:second_course_project/decoration.dart';
+import 'package:second_course_project/network/api_client.dart';
 import 'package:second_course_project/training_class.dart';
-import 'package:second_course_project/user.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:second_course_project/web/user_web.dart';
 
-class TrainingScreen extends StatefulWidget {
+class TrainingScreenWeb extends StatefulWidget {
   final Training currentTraining;
-  final Function(User) tmp;
-  final User currentUser;
-  const TrainingScreen({super.key, required this.currentUser, required this.currentTraining, required this.tmp});
+  final Function(UserWeb) tmp;
+  final UserWeb currentUser;
+  const TrainingScreenWeb({super.key, required this.currentUser, required this.currentTraining, required this.tmp});
   @override
-  State<TrainingScreen> createState() => TrainingScreenState();
+  State<TrainingScreenWeb> createState() => TrainingScreenWebState();
 }
 
-class TrainingScreenState extends State<TrainingScreen> {
+class TrainingScreenWebState extends State<TrainingScreenWeb> {
   int iteratorTraining = 0;
 
   @override
@@ -94,23 +94,8 @@ class TrainingScreenState extends State<TrainingScreen> {
     while (widget.currentUser.needExpToNextLevel <= widget.currentUser.exp) {
       updateLevel();
     }
-    Database db = await openDatabase(
-      'resoursec/data_base.db',
-    );
-    await db.update(
-      'users',
-      {
-        'id': widget.currentUser.id,
-        'name': widget.currentUser.name,
-        'password': widget.currentUser.password,
-        'level': widget.currentUser.level,
-        'exp': widget.currentUser.exp,
-        'needExpToNextLevel': widget.currentUser.needExpToNextLevel,
-      },
-      // Ensure that the Dog has a matching id.
-      where: 'id = ${widget.currentUser.id}',
-    );
-    await db.close();
+    final apiClient = ApiClient();
+    await apiClient.updateUser(widget.currentUser);
   }
 
   void startTimer() {

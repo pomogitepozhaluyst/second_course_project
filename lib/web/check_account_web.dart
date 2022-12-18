@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
-import 'package:second_course_project/home_screen.dart';
-import 'package:second_course_project/user.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:second_course_project/network/api_client.dart';
+import 'package:second_course_project/web/home_screen_web.dart';
+import 'package:second_course_project/web/user_web.dart';
 
-class RegistrationScreen extends StatefulWidget {
+class AuthorisationScreenWeb extends StatefulWidget {
   final void Function() getNormalColor;
 
-  const RegistrationScreen({
+  const AuthorisationScreenWeb({
     super.key,
     required this.getNormalColor,
   });
   @override
-  StateRegistrationScreen createState() => StateRegistrationScreen();
+  StateAuthorisationScreenWeb createState() => StateAuthorisationScreenWeb();
 }
 
-class StateRegistrationScreen extends State<RegistrationScreen> {
+class StateAuthorisationScreenWeb extends State<AuthorisationScreenWeb> {
   String? errorMessageOnEmptyPasswordInputField;
   String? errorMessageOnEmptyEmailInputField;
-  String nameFromInputField = '';
   String passwordFromInputField = '';
   String emailFromInputField = '';
+
+  String baseApi = 'http://10.0.2.2:8000/api/auth/users/';
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
       backgroundColor: UserDecoration.mainColor,
       appBar: AppBar(
         title: Text(
-          "Регистрация",
+          "Авторизация",
           style: TextStyle(
             fontFamily: UserDecoration.textStyle,
             color: UserDecoration.textTitleColor,
@@ -87,30 +88,6 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
                 padding: const EdgeInsets.all(10),
                 child: TextField(
                   onChanged: (String value) {
-                    nameFromInputField = value;
-                  },
-                  style: TextStyle(
-                    color: UserDecoration.textSubStrColor,
-                    fontSize: UserDecoration.textSize,
-                  ),
-                  maxLength: 40,
-                  decoration: InputDecoration(
-                    hintText: 'Введите Имя',
-                    hintStyle: TextStyle(fontSize: UserDecoration.textSize, color: UserDecoration.textSubStrColor),
-                    counterStyle: TextStyle(color: UserDecoration.textSubStrColor),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0x8076758a)),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: UserDecoration.textSubStrColor),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: TextField(
-                  onChanged: (String value) {
                     passwordFromInputField = value;
                   },
                   maxLength: 40,
@@ -145,7 +122,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
                     ),
                     onTap: () {
                       setState(() {
-                        registration();
+                        authorisation();
                       });
                     },
                     child: Padding(
@@ -154,7 +131,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
                         width: 300.0,
                         child: Center(
                           child: Text(
-                            'зарегистрироваться',
+                            'Войти',
                             style: TextStyle(
                               fontFamily: 'montserrat',
                               color: UserDecoration.textSubStrColor,
@@ -174,7 +151,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
     );
   }
 
-  Future<void> registration() async {
+  Future<void> authorisation() async {
     errorMessageOnEmptyEmailInputField = null;
     errorMessageOnEmptyPasswordInputField = null;
     bool errorsFromInitField = false;
@@ -190,44 +167,23 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
     if (errorsFromInitField) {
       return;
     }
-    Database db = await openDatabase(
-      'resoursec/data_base.db',
-    );
-    List<Map> tmp = await db.query('users', where: 'email = "$emailFromInputField"');
-    if (tmp.isNotEmpty) {
-      db.close();
-      errorMessageOnEmptyEmailInputField = 'Такая почта уже используется';
-      return;
+
+    final ApiClient apiClient = ApiClient();
+    final tmp = await apiClient.authUser(email: emailFromInputField, password: passwordFromInputField);
+    if (tmp is String) {
+      setState(() {
+        errorMessageOnEmptyEmailInputField = tmp;
+      });
+    } else {
+      goHomePage(tmp);
     }
-    await db.insert(r'users ', {
-      'name': nameFromInputField,
-      'email': emailFromInputField,
-      'password': passwordFromInputField,
-      'level': 0,
-      'exp': 0,
-      'needExpToNextLevel': 100,
-    });
-    List<Map> tmp2 = await db.query('users', where: 'email = "$emailFromInputField"');
-    await db.insert('userColor', {
-      'id': tmp2[0]['id'],
-      'mainColor': 0xFF090100,
-      'secondColor': 0xFF28262c,
-      'textTitleColor': 0xFFffffff,
-      'textSubStrColor': 0xFF76758a,
-      'iconColor': 0xFF777086,
-      'textStyle': 'montserrat',
-    });
-    List<Map> user =
-        await db.query(r'users ', where: 'email = "$emailFromInputField" AND password = "$passwordFromInputField"');
-    await db.close();
-    goHomePage(user[0]);
   }
 
   void returnBackScreen() {
     Navigator.of(context).pop();
   }
 
-  void goHomePage(Map user) {
+  void goHomePage(UserWeb user) {
     //Navigator.of(context).pop();
     setState(() {
       Navigator.push(
@@ -235,15 +191,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
         MaterialPageRoute(
           builder: (context) => MyHomePage(
             getNormalColor: widget.getNormalColor,
-            isUsedOriginalColor: false,
-            currentUser: User(
-              id: user['id'],
-              name: user['name'],
-              exp: user['exp'],
-              level: user['level'],
-              needExpToNextLevel: user['needExpToNextLevel'],
-              password: user['password'],
-            ),
+            currentUser: user,
           ),
         ),
       );

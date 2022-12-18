@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:second_course_project/User.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/home_screen.dart';
+import 'package:second_course_project/user.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CheckAccountScreen extends StatefulWidget {
@@ -17,6 +17,7 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
   String? errorMessageOnEmptyEmailInputField;
   late String emailFromInputField;
   late String passwordFromInputField;
+  bool isUsedOriginalColor = false;
 
   @override
   void initState() {
@@ -66,6 +67,7 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
                   },
                   style: TextStyle(
                     color: UserDecoration.textSubStrColor,
+                    fontSize: UserDecoration.textSize,
                   ),
                   maxLength: 40,
                   decoration: InputDecoration(
@@ -90,6 +92,7 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
                   },
                   style: TextStyle(
                     color: UserDecoration.textSubStrColor,
+                    fontSize: UserDecoration.textSize,
                   ),
                   maxLength: 40,
                   decoration: InputDecoration(
@@ -106,39 +109,65 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
                   ),
                 ),
               ),
-              InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () {
-                  setState(() {
-                    findUserIndDataBase();
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: SizedBox(
-                    width: 200.0,
-                    height: 50.0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: UserDecoration.secondColor,
-                        shape: BoxShape.rectangle,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(10.0),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Войти',
-                          style: TextStyle(
-                            fontFamily: 'montserrat',
-                            color: UserDecoration.textSubStrColor,
-                            fontSize: UserDecoration.textSize,
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Material(
+                  color: UserDecoration.secondColor,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(8.0),
+                  ),
+                  child: InkWell(
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(8.0),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        findUserIndDataBase();
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: SizedBox(
+                        width: 180.0,
+                        child: Center(
+                          child: Text(
+                            'Войти',
+                            style: TextStyle(
+                              fontFamily: 'montserrat',
+                              color: UserDecoration.textSubStrColor,
+                              fontSize: UserDecoration.textSize,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: isUsedOriginalColor,
+                      onChanged: (value) {
+                        setOriginalColor();
+                      },
+                      activeColor: UserDecoration.secondColor,
+                      shape: const CircleBorder(),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Text(
+                        'Использовать оригинальные цвета при входе?',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontFamily: 'montserrat',
+                          color: UserDecoration.textSubStrColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -177,6 +206,12 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
     await db.close();
   }
 
+  void setOriginalColor() {
+    setState(() {
+      isUsedOriginalColor = !isUsedOriginalColor;
+    });
+  }
+
   void goHomePage(Map user) {
     setState(() {
       Navigator.push(
@@ -192,6 +227,7 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
               needExpToNextLevel: user['needExpToNextLevel'],
               password: user['password'],
             ),
+            isUsedOriginalColor: isUsedOriginalColor,
           ),
         ),
       );

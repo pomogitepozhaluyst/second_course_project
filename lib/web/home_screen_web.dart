@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:second_course_project/account_screen.dart';
-import 'package:second_course_project/chose_training_screen.dart';
 import 'package:second_course_project/data_popup_menu_item.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/pop_up_item_data.dart';
 import 'package:second_course_project/training_class.dart';
-import 'package:second_course_project/user.dart';
+import 'package:second_course_project/web/account_screen.dart';
+import 'package:second_course_project/web/chose_training_screen_web.dart';
+import 'package:second_course_project/web/top_5_screen.dart';
+import 'package:second_course_project/web/user_web.dart';
 import 'package:sqflite/sqflite.dart';
 
 class MyHomePage extends StatefulWidget {
-  final User currentUser;
+  final UserWeb currentUser;
   final void Function() getNormalColor;
-  final bool isUsedOriginalColor;
   const MyHomePage({
     super.key,
     required this.currentUser,
     required this.getNormalColor,
-    required this.isUsedOriginalColor,
   });
 
   @override
@@ -30,101 +29,33 @@ class _MyHomePageState extends State<MyHomePage> {
   late Training footTraining;
   late Training staminaTraining;
   late Training extremeTraining;
-  late User currentUser = User(id: 0, level: 0, name: '', exp: 0, needExpToNextLevel: 0, password: '');
-  void helpGetTraining() async {
-    allTraining = await getTraining(widget.currentUser.id);
-  }
+  late UserWeb currentUser = UserWeb(
+    token: '',
+    name: '',
+    exp: 0,
+    level: 0,
+    needExpToNextLevel: 0,
+  );
 
   @override
   void initState() {
     super.initState();
     setState(() {
       getUserColorsFromLocalDataBase();
-      helpGetTraining();
       currentUser = widget.currentUser;
     });
-
-    /*User.level = 0;
-    User.name = "test";*/
-    /*  firstTraining = Training(
-      name: "firstTraining",
-      complexTraining: [
-        "присесть 5 раз",
-        "Отожмитесь 5 раз",
-      ],
-      imageTraining: Image.asset('assets/images/firstTraining.jpg'),
-      difficulty: 30,
-    );
-
-    staminaTraining = Training(
-        name: "staminaTraining",
-        complexTraining: ["присесть 500 раз", "Отожмитесь 500 раз", "Сделайте 500 раз пресса"],
-        imageTraining: Image.asset('assets/images/staminaTraining.jpg'),
-        difficulty: 500);
-
-    handTraining = Training(
-      name: "handTraining",
-      complexTraining: [
-        "держите планку 1 минуту",
-        "Отожмитесь 20 раз",
-      ],
-      imageTraining: Image.asset('assets/images/handTraining.webp'),
-      difficulty: 100,
-    );
-
-    footTraining = Training(
-      name: "footTraining",
-      complexTraining: [
-        "присесть 20 раз",
-        "Ложитесь на землю, и подымайте ноги 20 раз",
-      ],
-      imageTraining: Image.asset('assets/images/footTraining.webp'),
-      difficulty: 100,
-    );
-    extremeTraining = Training(
-      name: "extremeTraining",
-      complexTraining: [
-        "присесть 20 раз",
-        "Ложитесь на землю, и подымайте ноги 20 раз",
-      ],
-      imageTraining: Image.asset('assets/images/footTraining.webp'),
-      difficulty: 1000000000000000000,
-    );
-    allTraining.addAll([
-      firstTraining,
-      staminaTraining,
-      handTraining,
-      footTraining,
-      extremeTraining,
-    ]);*/
   }
 
-  Future<void> getUserColorsFromLocalDataBase() async {
-    if (!widget.isUsedOriginalColor) {
-      Database db = await openDatabase(
-        'resoursec/data_base.db',
-      );
-      List<Map> color = await db.query('userColor', where: 'id = ${widget.currentUser.id}');
-      setState(() {
-        UserDecoration.mainColor = Color(color[0]['mainColor']);
-        UserDecoration.secondColor = Color(color[0]['secondColor']);
-        UserDecoration.textTitleColor = Color(color[0]['textTitleColor']);
-        UserDecoration.textSubStrColor = Color(color[0]['textSubStrColor']);
-        UserDecoration.iconColor = Color(color[0]['iconColor']);
-        UserDecoration.textStyle = color[0]['textStyle'];
-      });
+  Future<void> getUserColorsFromLocalDataBase() async {}
 
-      await db.close();
-    }
-  }
-
-  void goChoseTraining() {
+  Future<void> goChoseTrainingWeb() async {
+    allTraining = await getTraining(1);
     setState(() {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) =>
-              ChoseTrainingScreen(currentUser: currentUser, allTraining: allTraining, tmp: updateScreen),
+              ChoseTrainingScreenWeb(currentUser: currentUser, allTraining: allTraining, tmp: updateScreen),
         ),
       );
     });
@@ -135,10 +66,33 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AccountScreen(currentUser: currentUser, updateMainScreen: updateScreen),
+          builder: (context) => AccountScreenWeb(currentUser: currentUser, updateMainScreen: updateScreen),
         ),
       );
     });
+  }
+
+  Future<List<Training>> getTraining(int id) async {
+    Database db = await openDatabase(
+      'resoursec/data_base.db',
+    );
+    List<Map> allTraining = await db.query('training', where: 'idUser =$id OR idUser IS null');
+    List<Training> trainings = [];
+    for (int i = 0; i < allTraining.length; i++) {
+      trainings.add(Training(
+          name: allTraining[i]['name'],
+          complexTraining: await getExercise(allTraining[i]['id']),
+          difficulty: allTraining[i]['difficult']));
+    }
+    return trainings;
+  }
+
+  Future<List<Map>> getExercise(int id) async {
+    Database db = await openDatabase(
+      'resoursec/data_base.db',
+    );
+    List<Map> allExercise = await db.query('exercise', where: 'id =$id');
+    return allExercise;
   }
 
   @override
@@ -246,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   onTap: () {
                     setState(() {
-                      goChoseTraining();
+                      goChoseTrainingWeb();
                     });
                   },
                   child: Padding(
@@ -268,40 +222,64 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Material(
+                color: UserDecoration.secondColor,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(8.0),
+                ),
+                child: InkWell(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(8.0),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      goTop5();
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: SizedBox(
+                      width: 300.0,
+                      child: Center(
+                        child: Text(
+                          'Топ 5 пользователей',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'montserrat',
+                            color: UserDecoration.textSubStrColor,
+                            fontSize: UserDecoration.textSize,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  void updateScreen(User user) {
+  void goTop5() {
     setState(() {
-      //UserDecoration.secondColor = Color(0x00000000);
-      widget.currentUser.level;
-      currentUser = user;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const TopFiveScreen(),
+        ),
+      );
     });
   }
 
-  Future<List<Training>> getTraining(int id) async {
-    Database db = await openDatabase(
-      'resoursec/data_base.db',
-    );
-    List<Map> allTraining = await db.query('training', where: 'idUser =$id OR idUser IS null');
-    List<Training> trainings = [];
-    for (int i = 0; i < allTraining.length; i++) {
-      trainings.add(Training(
-          name: allTraining[i]['name'],
-          complexTraining: await getExercise(allTraining[i]['id']),
-          difficulty: allTraining[i]['difficult']));
-    }
-    return trainings;
-  }
-
-  Future<List<Map>> getExercise(int id) async {
-    Database db = await openDatabase(
-      'resoursec/data_base.db',
-    );
-    List<Map> allExercise = await db.query('exercise', where: 'id =$id');
-    return allExercise;
+  void updateScreen(UserWeb user) {
+    setState(() {
+      //UserDecoration.secondColor = Color(0x00000000);
+      currentUser = user;
+      widget.currentUser.level;
+    });
   }
 }
