@@ -1,3 +1,5 @@
+import 'package:crypt/crypt.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/home_screen.dart';
@@ -83,7 +85,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
                   ),
                 ),
               ),
-              Padding(
+              /* Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
                   onChanged: (String value) {
@@ -106,7 +108,7 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
                     ),
                   ),
                 ),
-              ),
+              ),*/
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: TextField(
@@ -190,22 +192,32 @@ class StateRegistrationScreen extends State<RegistrationScreen> {
     if (errorsFromInitField) {
       return;
     }
+
+    if (!EmailValidator.validate(emailFromInputField)) {
+      errorMessageOnEmptyEmailInputField = 'Введите правильную почту';
+      return;
+    }
     Database db = await openDatabase(
       'resoursec/data_base.db',
     );
     List<Map> tmp = await db.query('users', where: 'email = "$emailFromInputField"');
     if (tmp.isNotEmpty) {
       db.close();
-      errorMessageOnEmptyEmailInputField = 'Такая почта уже используется';
+      setState(() {
+        errorMessageOnEmptyEmailInputField = 'Такая почта уже используется';
+      });
       return;
     }
+    passwordFromInputField = Crypt.sha256(passwordFromInputField).toString();
+    print(passwordFromInputField);
+
     await db.insert(r'users ', {
       'name': nameFromInputField,
       'email': emailFromInputField,
       'password': passwordFromInputField,
       'level': 0,
       'exp': 0,
-      'needExpToNextLevel': 100,
+      'needExpToNextLevel': 10,
     });
     List<Map> tmp2 = await db.query('users', where: 'email = "$emailFromInputField"');
     await db.insert('userColor', {

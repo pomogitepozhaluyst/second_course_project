@@ -123,7 +123,7 @@ class AccountScreenWebState extends State<AccountScreenWeb> with TickerProviderS
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: goSettingScreen,
         backgroundColor: UserDecoration.secondColor,
         shape: BeveledRectangleBorder(
@@ -133,7 +133,7 @@ class AccountScreenWebState extends State<AccountScreenWeb> with TickerProviderS
           Icons.settings,
           color: UserDecoration.iconColor,
         ),
-      ),
+      ),*/
     );
   }
 

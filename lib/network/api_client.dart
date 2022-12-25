@@ -35,7 +35,7 @@ class ApiClient {
         client.close();
         return errors;
       }
-      Iterable list = json.decode(response.body);
+      Iterable list = json.decode(utf8.decode(response.bodyBytes));
       users = list.map((model) => TopUsers.fromJson(model)).toList();
     } finally {
       client.close();
@@ -116,7 +116,7 @@ class ApiClient {
     await client.post(
       Uri.http(server, 'api/auth/profile/'),
       body: {
-        'auth_token': user.token,
+        //'auth_token': user.token,
         'level': user.level.toString(),
         'exp': user.exp.toString(),
         'needExpToNextLevel': user.needExpToNextLevel.toString(),

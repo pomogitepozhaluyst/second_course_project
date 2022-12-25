@@ -74,6 +74,43 @@ class StateTopFiveScreen extends State<TopFiveScreen> {
     final apiClient = ApiClient();
     List<TopUsers> users = await apiClient.getTop5();
     List<Container> top5 = [];
+    top5.add(
+      Container(
+        padding: const EdgeInsets.all(10),
+        child: Card(
+          color: UserDecoration.secondColor,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 10,
+                  child: Text(
+                    'Уровень',
+                    style: TextStyle(
+                      fontFamily: UserDecoration.textStyle,
+                      color: UserDecoration.textSubStrColor,
+                      fontSize: UserDecoration.textSize,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 7,
+                  child: Text(
+                    'Имя',
+                    style: TextStyle(
+                      fontFamily: UserDecoration.textStyle,
+                      color: UserDecoration.textSubStrColor,
+                      fontSize: UserDecoration.textSize,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
     for (int i = 0; i < 5; i++) {
       top5.add(
         Container(
@@ -85,20 +122,23 @@ class StateTopFiveScreen extends State<TopFiveScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    flex: 1,
-                    child: Text(
-                      users[i].level.toString(),
-                      style: TextStyle(
-                        fontFamily: UserDecoration.textStyle,
-                        color: UserDecoration.textSubStrColor,
-                        fontSize: UserDecoration.textSize,
+                    flex: 10,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 30),
+                      child: Text(
+                        users[i].level.toString(),
+                        style: TextStyle(
+                          fontFamily: UserDecoration.textStyle,
+                          color: UserDecoration.textSubStrColor,
+                          fontSize: UserDecoration.textSize,
+                        ),
                       ),
                     ),
                   ),
                   Expanded(
-                    flex: 4,
+                    flex: 7,
                     child: Text(
-                      users[i].name!,
+                      users[i].name,
                       style: TextStyle(
                         fontFamily: UserDecoration.textStyle,
                         color: UserDecoration.textSubStrColor,

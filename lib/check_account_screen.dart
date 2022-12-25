@@ -1,3 +1,4 @@
+import 'package:crypt/crypt.dart';
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/home_screen.dart';
@@ -144,7 +145,7 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
                   ),
                 ),
               ),
-              Padding(
+              /*Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Row(
                   children: [
@@ -169,7 +170,7 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
                     ),
                   ],
                 ),
-              ),
+              ),*/
             ],
           ),
         ),
@@ -178,6 +179,8 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
   }
 
   Future<void> findUserIndDataBase() async {
+    errorMessageOnEmptyEmailInputField = null;
+    errorMessageOnEmptyPasswordInputField = null;
     bool errorsFromInitField = false;
     if (passwordFromInputField.isEmpty) {
       errorMessageOnEmptyPasswordInputField = 'Введите пароль';
@@ -193,15 +196,29 @@ class StateCheckAccountScreen extends State<CheckAccountScreen> {
     Database db = await openDatabase(
       'resoursec/data_base.db',
     );
-    List<Map> user =
-        await db.query(r'users ', where: 'email = "$emailFromInputField" AND password = "$passwordFromInputField"');
-    if (user.length == 1) {
-      goHomePage(user[0]);
-    } else {
+    List<Map> user = await db.query(r'users ', where: 'email = "$emailFromInputField"');
+    if (user.isEmpty) {
+      await db.close();
       setState(() {
         errorMessageOnEmptyEmailInputField = 'Ошибка в логине или пароле';
         errorMessageOnEmptyPasswordInputField = 'Ошибка в логине или пароле';
       });
+      return;
+    }
+    print(passwordFromInputField);
+    final hash = Crypt(user[0]['password']);
+    print(hash.toString());
+
+    if (!hash.match(passwordFromInputField)) {
+      setState(() {
+        errorMessageOnEmptyEmailInputField = 'Ошибка в логине или пароле';
+        errorMessageOnEmptyPasswordInputField = 'Ошибка в логине или пароле';
+      });
+      await db.close();
+      return;
+    } else {
+      await db.close();
+      goHomePage(user[0]);
     }
     await db.close();
   }

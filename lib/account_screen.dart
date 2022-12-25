@@ -124,7 +124,7 @@ class StateAccountScreen extends State<AccountScreen> with TickerProviderStateMi
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /* floatingActionButton: FloatingActionButton(
         onPressed: goSettingScreen,
         backgroundColor: UserDecoration.secondColor,
         shape: BeveledRectangleBorder(
@@ -134,7 +134,7 @@ class StateAccountScreen extends State<AccountScreen> with TickerProviderStateMi
           Icons.settings,
           color: UserDecoration.iconColor,
         ),
-      ),
+      ),*/
     );
   }
 

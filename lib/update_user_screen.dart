@@ -1,3 +1,5 @@
+import 'package:crypt/crypt.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:second_course_project/decoration.dart';
 import 'package:second_course_project/user.dart';
@@ -175,6 +177,21 @@ class StateUpdateUserScreen extends State<UpdateUserScreen> {
   }
 
   Future<void> registration() async {
+    /*errorMessageOnEmptyEmailInputField = null;
+    errorMessageOnEmptyPasswordInputField = null;
+    bool errorsFromInitField = false;
+    if (emailFromInputField.isEmpty) {
+      errorMessageOnEmptyEmailInputField = 'почта не может быть пустой';
+      errorsFromInitField = true;
+    }
+    if (passwordFromInputField.isEmpty) {
+      errorMessageOnEmptyPasswordInputField = 'пароль не может быть пустым';
+      errorsFromInitField = true;
+    }
+
+    if (errorsFromInitField) {
+      return;
+    }*/
     errorMessageOnEmptyEmailInputField = null;
     errorMessageOnEmptyPasswordInputField = null;
     bool errorsFromInitField = false;
@@ -190,9 +207,25 @@ class StateUpdateUserScreen extends State<UpdateUserScreen> {
     if (errorsFromInitField) {
       return;
     }
+
+    if (!EmailValidator.validate(emailFromInputField)) {
+      errorMessageOnEmptyEmailInputField = 'Введите правильную почту';
+      return;
+    }
     Database db = await openDatabase(
       'resoursec/data_base.db',
     );
+    List<Map> tmp = await db.query('users', where: 'email = "$emailFromInputField"');
+    if (tmp.isNotEmpty && tmp[0]['id'] != widget.currentUser.id) {
+      db.close();
+      setState(() {
+        errorMessageOnEmptyEmailInputField = 'Такая почта уже используется';
+      });
+      return;
+    }
+    passwordFromInputField = Crypt.sha256(passwordFromInputField).toString();
+    print(passwordFromInputField);
+
     await db.update(
       'users',
       {

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:pedometer/pedometer.dart';
 import 'package:second_course_project/account_screen.dart';
 import 'package:second_course_project/chose_training_screen.dart';
 import 'package:second_course_project/data_popup_menu_item.dart';
@@ -35,68 +38,97 @@ class _MyHomePageState extends State<MyHomePage> {
     allTraining = await getTraining(widget.currentUser.id);
   }
 
+  late Stream<StepCount> _stepCountStream;
+  late Stream<PedestrianStatus> _pedestrianStatusStream;
+  String _status = '0', _steps = '0', _dropSteps = '0', _prevDropSteps = '0';
+  late StreamSubscription<StepCount> _stepStreamSubscription;
+
   @override
   void initState() {
     super.initState();
     setState(() {
-      getUserColorsFromLocalDataBase();
+      //getUserColorsFromLocalDataBase();
       helpGetTraining();
       currentUser = widget.currentUser;
+      initPlatformState();
+      getDropSteps();
+      getSteps();
     });
+  }
 
-    /*User.level = 0;
-    User.name = "test";*/
-    /*  firstTraining = Training(
-      name: "firstTraining",
-      complexTraining: [
-        "присесть 5 раз",
-        "Отожмитесь 5 раз",
-      ],
-      imageTraining: Image.asset('assets/images/firstTraining.jpg'),
-      difficulty: 30,
+  Future<void> getDropSteps() async {
+    Database db = await openDatabase(
+      'resoursec/data_base.db',
     );
+    List<Map> dropSteps2 = await db.query('pedometer', where: 'id = 1');
+    _dropSteps = await dropSteps2[0]['steps'];
+    print(_dropSteps);
+    await db.close();
+  }
 
-    staminaTraining = Training(
-        name: "staminaTraining",
-        complexTraining: ["присесть 500 раз", "Отожмитесь 500 раз", "Сделайте 500 раз пресса"],
-        imageTraining: Image.asset('assets/images/staminaTraining.jpg'),
-        difficulty: 500);
+  Future<void> dropCounter() async {
+    _dropSteps = _steps;
+    Database db = await openDatabase(
+      'resoursec/data_base.db',
+    );
+    await db.update(
+      'pedometer',
+      {'id': 1, 'steps': _steps},
+      where: 'id = 1',
+    );
+    await db.close();
+  }
 
-    handTraining = Training(
-      name: "handTraining",
-      complexTraining: [
-        "держите планку 1 минуту",
-        "Отожмитесь 20 раз",
-      ],
-      imageTraining: Image.asset('assets/images/handTraining.webp'),
-      difficulty: 100,
-    );
+  bool isNumeric(String s) {
+    if (s == '') {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
 
-    footTraining = Training(
-      name: "footTraining",
-      complexTraining: [
-        "присесть 20 раз",
-        "Ложитесь на землю, и подымайте ноги 20 раз",
-      ],
-      imageTraining: Image.asset('assets/images/footTraining.webp'),
-      difficulty: 100,
-    );
-    extremeTraining = Training(
-      name: "extremeTraining",
-      complexTraining: [
-        "присесть 20 раз",
-        "Ложитесь на землю, и подымайте ноги 20 раз",
-      ],
-      imageTraining: Image.asset('assets/images/footTraining.webp'),
-      difficulty: 1000000000000000000,
-    );
-    allTraining.addAll([
-      firstTraining,
-      staminaTraining,
-      handTraining,
-      footTraining,
-      extremeTraining,
-    ]);*/
+  String getSteps() {
+    if (isNumeric(_steps)) {
+      return (int.parse(_steps) - int.parse(_dropSteps)).toString();
+    } else {
+      return 'Шагомер не работает';
+    }
+  }
+
+  void onStepCount(StepCount event) {
+    setState(() {
+      _steps = event.steps.toString();
+    });
+  }
+
+  void onPedestrianStatusChanged(PedestrianStatus event) {
+    setState(() {
+      _status = event.status;
+    });
+  }
+
+  void onPedestrianStatusError(error) {
+    setState(() {
+      _status = 'Pedestrian Status not available';
+    });
+    print(_status);
+  }
+
+  void onStepCountError(error) {
+    print('onStepCountError: $error');
+    setState(() {
+      _steps = 'Step Count not available';
+    });
+  }
+
+  Future<void> initPlatformState() async {
+    _pedestrianStatusStream = await Pedometer.pedestrianStatusStream;
+    _pedestrianStatusStream.listen(onPedestrianStatusChanged).onError(onPedestrianStatusError);
+
+    _stepCountStream = await Pedometer.stepCountStream;
+    _stepStreamSubscription = await _stepCountStream.listen(onStepCount); //.onError(onStepCountError);
+    _stepStreamSubscription.onError(onStepCountError);
+
+    if (!mounted) return;
   }
 
   Future<void> getUserColorsFromLocalDataBase() async {
@@ -201,24 +233,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ],
-        /*actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 10, top: 3, bottom: 3),
-            decoration: BoxDecoration(
-                border: Border.all(color: UserDecoration.iconColor),
-                borderRadius: const BorderRadius.all(Radius.circular(10))),
-            child: Center(
-              child: IconButton(
-                icon: Icon(
-                  Icons.account_circle,
-                  color: UserDecoration.iconColor,
-                  size: 30,
-                ),
-                onPressed: goAccount,
-              ),
-            ),
-          ),
-        ],*/
         title: Text(
           currentUser.name,
           style: TextStyle(
@@ -261,6 +275,67 @@ class _MyHomePageState extends State<MyHomePage> {
                             color: UserDecoration.textSubStrColor,
                             fontSize: UserDecoration.textSize,
                           ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Text(
+                'Количество шагов:',
+                style: TextStyle(
+                  fontFamily: 'montserrat',
+                  color: UserDecoration.textSubStrColor,
+                  fontSize: UserDecoration.textSize,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Text(
+                getSteps(),
+                style: TextStyle(
+                  fontFamily: 'montserrat',
+                  color: UserDecoration.textSubStrColor,
+                  fontSize: UserDecoration.textSize,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Material(
+                color: UserDecoration.secondColor,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(8.0),
+                ),
+                child: InkWell(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(8.0),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      dropCounter();
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: SizedBox(
+                      width: 300.0,
+                      child: Center(
+                        child: Text(
+                          'Сбросить шагомер',
+                          style: TextStyle(
+                            fontFamily: 'montserrat',
+                            color: UserDecoration.textSubStrColor,
+                            fontSize: UserDecoration.textSize,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
@@ -286,7 +361,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Database db = await openDatabase(
       'resoursec/data_base.db',
     );
-    List<Map> allTraining = await db.query('training', where: 'idUser =$id OR idUser IS null');
+    List<Map> allTraining = await db.query(
+      'training',
+      where: 'idUser =$id OR idUser IS null',
+    );
     List<Training> trainings = [];
     for (int i = 0; i < allTraining.length; i++) {
       trainings.add(Training(
@@ -301,7 +379,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Database db = await openDatabase(
       'resoursec/data_base.db',
     );
-    List<Map> allExercise = await db.query('exercise', where: 'id =$id');
+    List<Map> allExercise = await db.query('exercise', where: 'id =$id', orderBy: 'length(name) DESC');
     return allExercise;
   }
 }

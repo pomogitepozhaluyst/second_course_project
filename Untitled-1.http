@@ -1,0 +1,34 @@
+
+POST http://127.0.0.1:8000/api/auth/users/
+Content-Type: application/json
+
+{"email":"4@1.com","password":"1"}
+
+
+###
+POST http://127.0.0.1:8000/api/auth/token/login/
+Content-Type: application/json
+
+{"email":"4@1.ru","password":"1"}
+###
+GET http://127.0.0.1:8000/api/auth/profile/
+Content-Type: application/json
+Authorization: Token 652b72b07628e104b16fe298ed55a4415cd49f86
+###
+
+GET http://127.0.0.1:8000/api/top_five_ranking/
+Content-Type: application/json
+###
+
+POST http://127.0.0.1:8000/api/auth/profile/
+Content-Type: application/json
+Authorization: Token 652b72b07628e104b16fe298ed55a4415cd49f86
+
+
+{
+  "auth_token": "28d74e7506b0b05f6852c3d2b027f97d0945c29f",
+  "email": "2@1.ru",
+  "level": 0,
+  "exp": 0,
+  "needExpToNextLevel": 10
+}
